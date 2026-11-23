@@ -1,8 +1,8 @@
 class AiNoteTaker < Formula
   desc "Local AI meeting note-taker: on-device transcription, diarization, summaries"
   homepage "https://github.com/Adarshb2000/good-freaking-note-taker"
-  url "https://github.com/Adarshb2000/good-freaking-note-taker/archive/refs/tags/v1.0.0.tar.gz"
-  sha256 "5ade53bd45922bdbd0ecd6859124a5fa580a5ee6235b1578c41247c5a8e2872a"
+  url "https://github.com/Adarshb2000/good-freaking-note-taker/archive/refs/tags/v1.0.1.tar.gz"
+  sha256 "c1478542bc32cb1b9f912785e648e07b6fc0f8f1b9d446dcb4b32eb273b521f7"
   license "MIT"
 
   depends_on arch: :arm64
@@ -18,6 +18,13 @@ class AiNoteTaker < Formula
     # Self-contained venv at its final Cellar path (stable shebangs).
     system Formula["python@3.12"].opt_bin/"python3.12", "-m", "venv", libexec/"venv"
     system libexec/"venv/bin/pip", "install", "--no-cache-dir", "-r", "requirements.txt"
+
+    # maturin-built extensions (tiktoken, tokenizers, ...) ship as dylibs with
+    # no Mach-O header padding, so brew's install-name relocation fails on them.
+    # Convert the standalone ones to bundles (the correct type for dlopen'd
+    # Python extensions); inter-linked dylib chains like torchaudio are skipped.
+    system libexec/"venv/bin/python3", "helper/relocate_extensions.py",
+           (libexec/"venv/lib/python3.12/site-packages").to_s
 
     libexec.install "watcher.py", "pipeline.py", "mic_monitor.py", "helper"
 
