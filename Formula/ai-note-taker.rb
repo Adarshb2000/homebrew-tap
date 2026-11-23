@@ -34,6 +34,18 @@ class AiNoteTaker < Formula
     EOS
   end
 
+  def post_install
+    # Brew's relocation rewrites torchaudio's @loader_path rpaths to opt/lib,
+    # breaking its @rpath links into torch/lib. Re-add absolute rpaths so the
+    # torch/torchaudio library web resolves again.
+    sp = libexec/"venv/lib/python3.12/site-packages"
+    Dir[sp/"torchaudio/lib/*.so"].each do |f|
+      system "install_name_tool", "-add_rpath", (sp/"torch/lib").to_s, f
+      system "install_name_tool", "-add_rpath", (sp/"torchaudio/lib").to_s, f
+      system "codesign", "--force", "--sign", "-", f
+    end
+  end
+
   service do
     run [opt_bin/"ai-note-taker"]
     keep_alive true
