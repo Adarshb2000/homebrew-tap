@@ -12,8 +12,8 @@ class AiNoteTaker < Formula
   def install
     # Swift capture helper (needs Command Line Tools' swiftc). Keep the module
     # cache inside the buildpath so the install sandbox stays happy.
-    system({ "CLANG_MODULE_CACHE_PATH" => (buildpath/"module-cache").to_s },
-           "bash", "helper/build.sh")
+    ENV["CLANG_MODULE_CACHE_PATH"] = (buildpath/"module-cache").to_s
+    system "bash", "helper/build.sh"
 
     # Self-contained venv at its final Cellar path (stable shebangs).
     system Formula["python@3.12"].opt_bin/"python3.12", "-m", "venv", libexec/"venv"
